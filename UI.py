@@ -26,9 +26,6 @@ class MainWindow(QMainWindow):
         self.label.setFont(font)
         layout.addWidget(self.label)    #Adicionar isto a todos
 
-        self.text_input = QLineEdit(self)
-        layout.addWidget(self.text_input)
-
         #Caixa de texto para o nome
         self.nm_inpt = QLineEdit(self)
         self.nm_inpt.setPlaceholderText("Nome")
@@ -47,6 +44,7 @@ class MainWindow(QMainWindow):
         self.button.setGeometry(50, 230, 150, 40)
         self.button.clicked.connect(self.show_text)
 
+        #Tenho que remover esta parte mas ao fazer isso dou break no design
         layout.addWidget(self.button)
         self.label = QLabel("Nome", self)
         layout.addWidget(self.label)
