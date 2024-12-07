@@ -17,30 +17,47 @@ class MainWindow(QMainWindow):
         self.BV_label.setGeometry(0, 0, 900, 50)
         font = QFont('Arial', 21)
         self.BV_label.setFont(font)
+        layout.addWidget(self.BV_label)
 
         #Caixas de texto debaixo disto
-        self.label = QLabel("Introduza os seu dados:", self)
-        self.label.setGeometry(0, 0, 900, 100)
+        self.label = QLabel("Introduza os seus dados:", self)
         font = QFont('Arial', 17)
         self.label.setFont(font)
+        layout.addWidget(self.label)
 
-        self.text_input = QLineEdit(self)
-        layout.addWidget(self.text_input)
+        #Caixa de texto para o nome
+        self.nm_inpt = QLineEdit(self)
+        self.nm_inpt.setPlaceholderText("Nome")
+        layout.addWidget(self.nm_inpt)
 
-        #Botão
+        #Caixa de texto para a senha
+        self.pws_inpt = QLineEdit(self)
+        self.pws_inpt.setPlaceholderText("Senha")
+        self.pws_inpt.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.pws_inpt)
+
+        #Botão de Login
         self.button = QPushButton("Login", self)
         self.button.clicked.connect(self.show_text)
-
         layout.addWidget(self.button)
-        self.label = QLabel("Nome", self)
-        layout.addWidget(self.label)
+
+        #Caixa de texto para o output
+        self.otp_label = QLabel("", self)
+        self.otp_label.setFont(font)
+        layout.addWidget(self.otp_label)
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
     
     def show_text(self):
-        self.label.setText(self.text_input.text())
+        nome = self.nm_inpt.text()
+        password = self.pws_inpt.text()
+
+        if not nome or not password:
+            self.otp_label.setText("Por favor, preencha todos os campos.")
+        else:
+            self.otp_label.setText(f"Bem-Vindo, {nome}")
 
 
 app = QApplication(sys.argv)
