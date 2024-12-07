@@ -46,7 +46,6 @@ class MainWindow(QMainWindow):
         self.otp_label.setFont(font)
         layout.addWidget(self.otp_label)
 
-
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
