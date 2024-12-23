@@ -2,7 +2,7 @@ from utilizador import Utilizador
 from lista_de_tarefas import ListaDeTarefas
 
 class SistemaGestaoTarefas:
-    def __init__(self, ficheiro_utilizadores="utilizadores.txt"):
+    def __init__(self, ficheiro_utilizadores="profiles.txt"):
         self.ficheiro_utilizadores = ficheiro_utilizadores
         self.utilizadores = {}
         self.ld_utilizadores()  # Carregar os utilizadores do arquivo
