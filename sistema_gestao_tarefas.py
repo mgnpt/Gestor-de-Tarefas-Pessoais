@@ -12,8 +12,13 @@ class SistemaGestaoTarefas:
         try:
             with open(self.ficheiro_utilizadores, "r") as file:
                 for linha in file:
-                    nome, senha = linha.strip().split(":")
-                    self.utilizadores[nome] = Utilizador(nome, senha)
+                    linha = linha.strip()
+                    if ":" in linha:
+                        nome, senha = linha.split(":")
+                        self.utilizadores[nome] = Utilizador(nome, senha)
+                    else:
+                        print(f"Formato de linha inválido: {linha} (foi ignorado)")
+            print(f"Utilizadores carregados: {list(self.utilizadores.keys())}")
         except FileNotFoundError:
             print(f"O arquivo {self.ficheiro_utilizadores} não foi encontrado. Nenhum utilizador carregado.")
     
@@ -36,7 +41,7 @@ class SistemaGestaoTarefas:
     # Autenticar utilizador
     def auth_utilizador(self, nome, senha):
         utilizador = self.utilizadores.get(nome)
-        if utilizador and utilizador.senha == senha:
+        if utilizador and utilizador._Utilizador__senha == senha:
             return utilizador
         else:
             return None
