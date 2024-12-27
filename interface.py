@@ -88,6 +88,33 @@ class AppWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         return container
+    
+    def criar_tela_dashboard(self, nome):
+        layout = QVBoxLayout()
+
+        #Mensagem de boas-vindas
+        label_bv = QLabel(f"Bem-vindo, {nome}!", self)
+        label_bv.setFont(QFont("Arial", 21))
+        layout.addWidget(label_bv)
+
+        #Botão para voltar ao Login
+        btn_voltar = QPushButton("Voltar ao Login", self)
+        btn_voltar.clicked.connect(self.voltar_para_login)
+        layout.addWidget(btn_voltar)
+
+        #Botão para ciar lista de tarefas
+        btn_criar_lista = QPushButton("Criar lista nova", self)
+        btn_criar_lista.clicked.connect(self.criar_nova_lista)
+        layout.addWidget(btn_criar_lista)
+
+        #Botão logout
+        btn_logout = QPushButton("Sair", self)
+        btn_logout.clicked.connect(self.voltar_para_login)
+        layout.addWidget(btn_logout)
+
+        container = QWidget()
+        container.setLayout(layout)
+        return container
 
     def autenticar_utilizador(self):
         nome = self.input_nome_login.text()
@@ -96,8 +123,12 @@ class AppWindow(QMainWindow):
         utilizador = self.sistema.auth_utilizador(nome, senha)
         if utilizador:
             print(f"Bem-vindo, {nome}!")
+            self.tela_dashboard = self.criar_tela_dashboard(nome)
+            self.pages.addWidget(self.tela_dashboard)
+            self.pages.setCurrentWidget(self.tela_dashboard)
         else:
             print("Credenciais inválidas. Tente novamente.")
+            
 
     def registrar_utilizador(self):
         nome = self.input_nome_registro.text()

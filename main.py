@@ -14,12 +14,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-'''''
-
-sistema = SistemaGestaoTarefas(ficheiro_utilizadores="profiles.txt")
-
-app = QApplication(sys.argv)
-window = AppWindow(sistema)
-window.show()
-sys.exit(app.exec_())
-'''
