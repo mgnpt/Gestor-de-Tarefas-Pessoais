@@ -11,23 +11,22 @@ class Utilizador:
             file.write(f"{profile.__str__()}\n")
 
     def load(self):   #Função para carregar os perfis
-        with open ("profiles.txt", "r") as file:
-            profiles = []
-
-            for linha in file:
-                nome, senha = linha.strip().split(":")
-                profiles.append(Utilizador(nome, senha))
-       
+        profiles = []
+        try:
+            with open("profiles.txt", "r") as file:
+                for linha in file:
+                    nome, senha = linha.strip().split(":")
+                    profiles.append(Utilizador(nome, senha))
+        except FileNotFoundError:
+            print("Arquivo de perfis não encontrado. Nenhum perfil foi carregado.")
         return profiles
 
-    def alt_senha(self):    #Função para alterar a passe de um dos perfis
-        nv_senha = input("Digite a nova senha: ")
+    def alt_senha(self, nv_senha):    #Função para alterar a passe de um dos perfis
         self.__senha = nv_senha
-
         profiles = Utilizador.load()
         with open("profiles.txt", "w") as file:
             for profile in profiles:
-                if profile.__nome == self.__nome:
+                if profile.__Utilizador__nome == self.__nome:
                     file.write(f"{self.__nome}:{self.__senha}")
                 else:
-                    file.write(f"{profile._Utilizador__nome}:{profile._Utilizador__senha}\n")    #Para reescrever os outros perfis inalterados ps. o 'pass' reescrevia :(
+                    file.write(f"{profile._Utilizador__nome}:{profile._Utilizador__senha}\n")

@@ -115,6 +115,15 @@ class AppWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         return container
+    
+    def ver_lista_tarefas(self):
+        layout = QVBoxLayout()
+
+        label_titulo = QLabel("Lista de Tarefas", self)
+        label_titulo.setFont(QFont("Arial", 18))
+        layout.addWidget(label_titulo)
+
+        tarefas 
 
     def autenticar_utilizador(self):
         nome = self.input_nome_login.text()
