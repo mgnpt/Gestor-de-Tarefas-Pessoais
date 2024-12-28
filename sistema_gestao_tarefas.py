@@ -1,6 +1,6 @@
 from utilizador import Utilizador
 from lista_de_tarefas import ListaDeTarefas
-
+from relatorio import Relatorio
 class SistemaGestaoTarefas:
     def __init__(self, ficheiro_utilizadores="profiles.txt"):
         self.ficheiro_utilizadores = ficheiro_utilizadores
@@ -55,3 +55,11 @@ class SistemaGestaoTarefas:
             return "Senha alterada com sucesso."
         else:
             return "Nome de utilizador ou senha incorreta"
+    
+    def cr_relatorio(self, nome_utilizador, nome_arquivo="relatorio.txt"):
+        if nome_utilizador in self.utilizadores:
+            utilizador = self.utilizadores[nome_utilizador]
+            relatorio = Relatorio(utilizador.lista_tarefas)
+            return relatorio.criar_relatorio(nome_arquivo)
+        else:
+            return "Utilizador nao encontrado."

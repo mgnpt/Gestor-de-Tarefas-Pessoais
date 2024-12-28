@@ -161,21 +161,29 @@ class AppWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
-        self.titulo_input = QLineEdit()
-        self.titulo_input.setPlaceholderText("Titulo")
-        layout.addWidget(self.titulo_input)
+        #Título
+        self.input_titulo = QLineEdit()
+        self.input_titulo.setPlaceholderText("Titulo")
+        layout.addWidget(self.input_titulo)
 
-        self.descricao_input = QLineEdit()
-        self.descricao_input.setPlaceholderText("Descricao")
-        layout.addWidget(self.descricao_input)
+        #Descrição
+        self.input_descricao = QLineEdit()
+        self.input_descricao.setPlaceholderText("Descricao")
+        layout.addWidget(self.input_descricao)
 
-        self.categoria_input = QComboBox()
-        self.categoria_input.addItems(["Trabalho", "Pessoal", "Estudos"])
-        layout.addWidget(self.categoria_input)
+        #Data
+        self.input_data = QLineEdit()
+        self.input_data.setPlaceholderText("Data (ex: 2024-12-28)")
+        layout.addWidget(self.input_data)
 
-        self.status_input = QComboBox()
-        self.status_input.addItems(["Pendente", "Concluida"])
-        layout.addWidget(self.status_input)
+        #Categoria
+        self.combo_categoria = QComboBox()
+        self.combo_categoria.addItems(["Trabalho", "Pessoal", "Estudos"])
+        layout.addWidget(self.combo_categoria)
+
+        self.combo_status = QComboBox()
+        self.combo_status.addItems(["Pendente", "Concluida"])
+        layout.addWidget(self.combo_status)
 
         btn_salvar = QPushButton("Salvar", self)
         btn_salvar.clicked.connect(self.salvar_tarefa)
@@ -189,23 +197,24 @@ class AppWindow(QMainWindow):
         self.nv_tarefa_janela.exec_()
 
     def salvar_tarefa(self):
-        titulo = self.titulo_input.text()
-        descricao = self.descricao_input.text()
-        categoria = self.categoria_input.currentText()
-        status = self.status_input.currentText()
+        titulo = self.input_titulo.text()
+        descricao = self.input_descricao.text()
+        data = self.input_data.text()
+        categoria = self.combo_categoria.currentText()
 
-        if titulo:
-            nv_tarefa = Tarefa(titulo, descricao, categoria, status)
-            utilizador = self.sistema.utilizadores.get(self.nome_atual)
-            if utilizador:
-                utilizador.lista_tarefas.adicionar_tarefa(nv_tarefa)
-                self.nv_tarefa_janela.close()
-                self.mostrar_lista_tarefas() #Atualiza a lista na interface
-            else:
-                QMessageBox.warning(self, "Erro", "Utilizador nao encontrado")
+        if not titulo or not descricao or not data or not categoria:
+            QMessageBox.warning(self, "Erro", "Por favor, preencha todos os campos")
+            return
+        
+        utilizador = self.sistema.utilizadores.get(self.nome_atual)
+
+        if utilizador:
+           utilizador.lista_tarefas.adicionar_tarefa(titulo, descricao, data, categoria)
+           QMessageBox.information(self, "Sucesso", "Tarefa criada com sucesso!")
+           self.nv_tarefa_janela.close()
+
         else:
-            QMessageBox.warning(self, "Erro", "Por favor, insira um titulo")
-
+            QMessageBox.critical(self, "Erro", "Não foi possível criar a tarefa. Utilizador nao encontrado.")
 
     def voltar_para_dashboard(self):
         self.pages.setCurrentWidget(self.tela_dashboard)
@@ -241,6 +250,16 @@ class AppWindow(QMainWindow):
 
     def voltar_para_registro(self):
         self.pages.setCurrentWidget(self.tela_registo)
+    
+    def criar_relatorio(self):
+        utilizador = self.sistema.utilizadores.get(self.nome_atual)
+        if utilizador:
+            from relatorio import Relatorio
+            relatorio = Relatorio(utilizador.lista_tarefas)
+            resultado = relatorio.criar_relatorio()
+            QMessageBox.information(self, "Relatório", resultado)
+        else:
+            QMessageBox.critical(self, "Erro", "Erro ao criar o relatório. Utilizador nao encontrado.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
