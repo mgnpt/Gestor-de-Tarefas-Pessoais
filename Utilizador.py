@@ -1,7 +1,9 @@
+from lista_de_tarefas import ListaDeTarefas
 class Utilizador:
     def __init__(self, nome, senha):    #Pefil atual
         self.__nome = nome
         self.__senha = senha
+        self.lista_tarefas = ListaDeTarefas(nome)
 
     def __str__(self):
         return f"{self.__nome}:{self.__senha}"

@@ -5,8 +5,12 @@ class ListaDeTarefas:
         self.nome = nome
         self.tarefas = []
 
-    def adicionar_tarefa(self, tarefa):
-        self.tarefas.append(tarefa)
+    def adicionar_tarefa(self, titulo, descricao, data, categoria):
+        nv_tarefa = Tarefa(titulo, descricao, data, categoria)
+        self.tarefas.append(nv_tarefa)
+    
+    def listar_tarefas(self):
+        return self.tarefas
     
     def remover_tarefa(self, titulo):
         for tarefa in self.tarefas:

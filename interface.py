@@ -1,13 +1,16 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QStackedWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QComboBox, QDialog, QMessageBox
 from PyQt5.QtGui import QFont
 from sistema_gestao_tarefas import SistemaGestaoTarefas
+from tarefa import Tarefa
+
 
 class AppWindow(QMainWindow):
     def __init__(self, sistema):
         super().__init__()
 
         self.sistema = sistema
+        self.nome_atual = None
 
         self.setWindowTitle("Gestor de Tarefas Pessoais")
         self.setGeometry(100, 100, 500, 400)
@@ -15,12 +18,14 @@ class AppWindow(QMainWindow):
         self.pages = QStackedWidget()
         self.setCentralWidget(self.pages)
 
+        #Criar telas
         self.tela_login = self.criar_tela_login()
         self.tela_registo = self.criar_tela_registo()
 
         self.pages.addWidget(self.tela_login)
         self.pages.addWidget(self.tela_registo)
 
+        #Iniciar na tela de login
         self.pages.setCurrentWidget(self.tela_login)
 
     def criar_tela_login(self):
@@ -97,33 +102,113 @@ class AppWindow(QMainWindow):
         label_bv.setFont(QFont("Arial", 21))
         layout.addWidget(label_bv)
 
-        #Botão para voltar ao Login
-        btn_voltar = QPushButton("Voltar ao Login", self)
-        btn_voltar.clicked.connect(self.voltar_para_login)
-        layout.addWidget(btn_voltar)
-
-        #Botão para ciar lista de tarefas
-        btn_criar_lista = QPushButton("Criar lista nova", self)
-        btn_criar_lista.clicked.connect(self.criar_nova_lista)
-        layout.addWidget(btn_criar_lista)
+        #Botão para ver tarefas
+        btn_ver_tarefas = QPushButton("Ver lista de tarefas", self)
+        btn_ver_tarefas.clicked.connect(self.mostrar_lista_tarefas)
+        layout.addWidget(btn_ver_tarefas)
 
         #Botão logout
-        btn_logout = QPushButton("Sair", self)
+        btn_logout = QPushButton("Logout", self)
         btn_logout.clicked.connect(self.voltar_para_login)
         layout.addWidget(btn_logout)
 
         container = QWidget()
         container.setLayout(layout)
         return container
-    
-    def ver_lista_tarefas(self):
+
+    def mostrar_lista_tarefas(self):
+        utilizador = self.sistema.utilizadores.get(self.nome_atual)
+        if utilizador:
+            self.ver_lista_tarefas(utilizador.lista_tarefas)
+        else:
+           print("Erro: utilizador não encontrado.") 
+
+    def ver_lista_tarefas(self, lista_de_tarefas):
         layout = QVBoxLayout()
 
         label_titulo = QLabel("Lista de Tarefas", self)
         label_titulo.setFont(QFont("Arial", 18))
         layout.addWidget(label_titulo)
 
-        tarefas 
+        if lista_de_tarefas.tarefas:
+            for tarefa in lista_de_tarefas.tarefas:
+                label_tarefa = QLabel(f"- {tarefa.titulo}: {tarefa.descricao}", self)
+                layout.addWidget(label_tarefa)
+        else:
+            label_vazio = QLabel("A lista está vazia", self)
+            layout.addWidget(label_vazio)
+        
+        btn_criar_tarefa = QPushButton("Criar Tarefa", self)
+        btn_criar_tarefa.clicked.connect(self.criar_tarefa)
+        layout.addWidget(btn_criar_tarefa)
+
+        btn_voltar = QPushButton("Voltar", self)
+        btn_voltar.clicked.connect(self.voltar_para_dashboard)
+        layout.addWidget(btn_voltar)
+
+        btn_voltar = QPushButton("Voltar", self)
+        btn_voltar.clicked.connect(self.voltar_para_dashboard)
+        layout.addWidget(btn_voltar)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.pages.addWidget(container)
+        self.pages.setCurrentWidget(container)
+    
+    def criar_tarefa(self):
+        self.nv_tarefa_janela = QDialog(self)
+        self.nv_tarefa_janela.setWindowTitle("Criar Tarefa")
+
+        layout = QVBoxLayout()
+
+        self.titulo_input = QLineEdit()
+        self.titulo_input.setPlaceholderText("Titulo")
+        layout.addWidget(self.titulo_input)
+
+        self.descricao_input = QLineEdit()
+        self.descricao_input.setPlaceholderText("Descricao")
+        layout.addWidget(self.descricao_input)
+
+        self.categoria_input = QComboBox()
+        self.categoria_input.addItems(["Trabalho", "Pessoal", "Estudos"])
+        layout.addWidget(self.categoria_input)
+
+        self.status_input = QComboBox()
+        self.status_input.addItems(["Pendente", "Concluida"])
+        layout.addWidget(self.status_input)
+
+        btn_salvar = QPushButton("Salvar", self)
+        btn_salvar.clicked.connect(self.salvar_tarefa)
+        layout.addWidget(btn_salvar)
+
+        btn_cancelar = QPushButton("Cancelar", self)
+        btn_cancelar.clicked.connect(self.nv_tarefa_janela.close)
+        layout.addWidget(btn_cancelar)
+
+        self.nv_tarefa_janela.setLayout(layout)
+        self.nv_tarefa_janela.exec_()
+
+    def salvar_tarefa(self):
+        titulo = self.titulo_input.text()
+        descricao = self.descricao_input.text()
+        categoria = self.categoria_input.currentText()
+        status = self.status_input.currentText()
+
+        if titulo:
+            nv_tarefa = Tarefa(titulo, descricao, categoria, status)
+            utilizador = self.sistema.utilizadores.get(self.nome_atual)
+            if utilizador:
+                utilizador.lista_tarefas.adicionar_tarefa(nv_tarefa)
+                self.nv_tarefa_janela.close()
+                self.mostrar_lista_tarefas() #Atualiza a lista na interface
+            else:
+                QMessageBox.warning(self, "Erro", "Utilizador nao encontrado")
+        else:
+            QMessageBox.warning(self, "Erro", "Por favor, insira um titulo")
+
+
+    def voltar_para_dashboard(self):
+        self.pages.setCurrentWidget(self.tela_dashboard)
 
     def autenticar_utilizador(self):
         nome = self.input_nome_login.text()
@@ -132,8 +217,10 @@ class AppWindow(QMainWindow):
         utilizador = self.sistema.auth_utilizador(nome, senha)
         if utilizador:
             print(f"Bem-vindo, {nome}!")
-            self.tela_dashboard = self.criar_tela_dashboard(nome)
-            self.pages.addWidget(self.tela_dashboard)
+            self.nome_atual = nome
+            if not hasattr(self, 'tela_dashboard'):
+                self.tela_dashboard = self.criar_tela_dashboard(nome)
+                self.pages.addWidget(self.tela_dashboard)
             self.pages.setCurrentWidget(self.tela_dashboard)
         else:
             print("Credenciais inválidas. Tente novamente.")
