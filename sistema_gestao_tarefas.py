@@ -1,50 +1,47 @@
+import bcrypt
 from utilizador import Utilizador
-from lista_de_tarefas import ListaDeTarefas
-from relatorio import Relatorio
+import os
+
 class SistemaGestaoTarefas:
     def __init__(self, ficheiro_utilizadores="profiles.txt"):
+        self.ficheiro_utilizadores = os.path.join(os.getcwd(), ficheiro_utilizadores)
+        if not os.path.exists(self.ficheiro_utilizadores): 
+            with open(self.ficheiro_utilizadores, "w") as file:
+                pass  # Cria um ficheiro vazio
         self.ficheiro_utilizadores = ficheiro_utilizadores
         self.utilizadores = {}
         self.ld_utilizadores()  # Carregar os utilizadores do arquivo
     
     # Carregar utilizadores do arquivo
     def ld_utilizadores(self):
-        try:
-            with open(self.ficheiro_utilizadores, "r") as file:
-                for linha in file:
-                    linha = linha.strip()
-                    if ":" in linha:
-                        nome, senha = linha.split(":")
-                        self.utilizadores[nome] = Utilizador(nome, senha)
-                    else:
-                        print(f"Formato de linha inválido: {linha} (foi ignorado)")
-            print(f"Utilizadores carregados: {list(self.utilizadores.keys())}")
-        except FileNotFoundError:
-            print(f"O arquivo {self.ficheiro_utilizadores} não foi encontrado. Nenhum utilizador carregado.")
-    
-    # Guardar utilizadores no arquivo
-    def sv_utilizadores(self):
-        with open(self.ficheiro_utilizadores, "w") as file:
-            for nome, user in self.utilizadores.items():
-                file.write(f"{nome}:{user.senha}\n")
-    
+        with open(self.ficheiro_utilizadores, "r") as file:
+            for linha in file:
+                linha = linha.strip()
+                if ":" in linha:
+                    nomeGuardado, senhaGuardada = linha.split(":")
+                    senhaGuardada = senhaGuardada.strip().encode()  # Converter senha para bytes
+                    self.utilizadores[nomeGuardado] = Utilizador(nomeGuardado, senhaGuardada)
+
+
     # Registar utilizador
     def reg_utilizador(self, nome, senha):
         if nome in self.utilizadores:
             return f"O utilizador {nome} já existe."
-        
-        novo_utilizador = Utilizador(nome, senha)
-        self.utilizadores[nome] = novo_utilizador
-        self.sv_utilizadores()
+        senhaEncriptada = self.encriptarSenha(senha)
+        self.utilizadores[nome] = Utilizador(nome, senhaEncriptada)
+        with open("profiles.txt","a") as file:
+            file.write(f"{nome}:{senhaEncriptada.decode()}\n")
         return f"Utilizador {nome} criado com sucesso."
-    
+        
+
     # Autenticar utilizador
     def auth_utilizador(self, nome, senha):
         utilizador = self.utilizadores.get(nome)
-        if utilizador and utilizador._Utilizador__senha == senha:
+        if utilizador and bcrypt.checkpw(senha.encode(), utilizador.get_senha()):
             return utilizador
         else:
             return None
+
     
     # Alterar senha do utilizador
     def alt_senha(self, nome, senha_antiga, senha_nv):
@@ -56,10 +53,7 @@ class SistemaGestaoTarefas:
         else:
             return "Nome de utilizador ou senha incorreta"
     
-    def cr_relatorio(self, nome_utilizador, nome_arquivo="relatorio.txt"):
-        if nome_utilizador in self.utilizadores:
-            utilizador = self.utilizadores[nome_utilizador]
-            relatorio = Relatorio(utilizador.lista_tarefas)
-            return relatorio.criar_relatorio(nome_arquivo)
-        else:
-            return "Utilizador nao encontrado."
+    
+    
+    def encriptarSenha(self,senha):
+        return bcrypt.hashpw(senha.encode(), bcrypt.gensalt())

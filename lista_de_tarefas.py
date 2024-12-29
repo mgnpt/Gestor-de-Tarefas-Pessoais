@@ -1,23 +1,27 @@
 from tarefa import Tarefa
 
-class ListaDeTarefas:
-    def __init__(self, nome):
-        self.nome = nome
-        self.tarefas = []
+import os
+from tarefa import Tarefa
 
-    def adicionar_tarefa(self, titulo, descricao, data, categoria, status="Pendente"):
-        nv_tarefa = Tarefa(titulo, descricao, data, categoria, status)
-        self.tarefas.append(nv_tarefa)
-    
-    def listar_tarefas(self):
-        return self.tarefas
-    
-    def remover_tarefa(self, titulo):
-        for tarefa in self.tarefas:
-            if tarefa.titulo == titulo:
-                self.tarefas.remove(tarefa)
-                return f"Tarefa '{titulo}' foi removida com sucesso!"
-        return f"Tarefa '{titulo}' nao encontrada na lista!"
+class ListaDeTarefas:
+    def __init__(self, username):
+        self.username = username
+        self.tarefas =[]
+        self.filename = os.path.join(os.getcwd(), "tarefa.txt")
+        if not os.path.exists(self.filename): 
+            with open(self.filename, "w") as file:
+                pass  # Cria um ficheiro vazio
+
+    def adicionarTarefa(self, tarefa: Tarefa):
+        self.tarefas.append(tarefa)
+        with open(self.filename, "a") as file:
+            file.write(f"Utilizador: {self.username},Titulo: {tarefa.titulo} Descricao: {tarefa.descricao}, Categoria: {tarefa.categoria}, Status: {tarefa.status},Data de criação: {tarefa.data}\n")
+
+    def removerTarefa(self, titulo):
+        self.tarefas = [tarefa for tarefa in self.tarefas if tarefa.titulo != titulo]
+        with open(self.filename,"w") as file:
+            for tarefa in self.tarefas:
+                file.write(f"Utilizador: {self.username},Titulo: {tarefa.titulo} Descricao: {tarefa.descricao}, Categoria: {tarefa.categoria}, Status: {tarefa.status},Data de criação: {tarefa.dataCriaçao}\n")
     
     def lista_tarefas(self):
         if not self.tarefas:

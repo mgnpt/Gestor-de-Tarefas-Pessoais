@@ -1,25 +1,21 @@
+import os
+from tarefa import Tarefa
+
 class Relatorio:
-    def __init__(self, lista_tarefas):
-        self.lista_tarefas = lista_tarefas
+    def __init__(self, filename="relatorio.txt"):
+        self.filename = os.path.join(os.getcwd(), filename)
+        if not os.path.exists(self.filename):
+            with open(self.filename, "w") as file:
+                pass  # Cria um ficheiro vazio
     
-    def criar_relatorio(self, nome_arquivo="relatorio.txt"):
-        with open(nome_arquivo, 'w') as arquivo:
-            arquivo.write(f"Relatório de tarefas pendentes - Lista: {self.lista_tarefas.nome}\n")
-            arquivo.write("=" * 50 + "\n")
+    def gerarRelatorio(self, listaTarefas, utilizador_nome=None, status=None):
+        tarefas_relatorio = []
 
-            tarefas_pendentes = []
-            for tarefa in self.lista_tarefas.tarefas:
-                if tarefa.status == "Pendente":
-                    tarefas_pendentes.append(tarefa)
+        for tarefa in listaTarefas:
+            if status is None or tarefa.status == status:
+                tarefas_relatorio.append(f"Utilizador: {utilizador_nome}, Titulo: {tarefa.titulo}, Descricao: {tarefa.descricao}, Categoria: {tarefa.categoria}, Status: {tarefa.status}, Data de criacao: {tarefa.data}\n")
 
-            if not tarefas_pendentes:
-                arquivo.write("Nenhuma tarefa pendente encontrada.\n")
-            else:
-                for tarefa in tarefas_pendentes:
-                    arquivo.write(f"Título: {tarefa.titulo}\n")
-                    arquivo.write(f"Descrição: {tarefa.descricao}\n")
-                    arquivo.write(f"Categoria: {tarefa.categoria}\n")
-                    arquivo.write(f"Status: {tarefa.status}\n")
-                    arquivo.write("=" * 50 + "\n")
-            
-            return f'Relatório criado com sucesso em {nome_arquivo}'
+        # Escreve o relatório no ficheiro
+        with open(self.filename, "a") as file:
+            file.writelines(tarefas_relatorio)
+

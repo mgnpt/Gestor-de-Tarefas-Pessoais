@@ -1,0 +1,2 @@
+Utilizador: joao, Título: a, Descrição: a, Categoria: Pendente, Status: joao, Data de criação: 2024-12-29 14:39:53
+Utilizador: joao, Titulo: a, Descricao: a, Categoria: Pendente, Status: joao, Data de criacao: 2024-12-29 16:28:50

@@ -6,7 +6,6 @@ from interface import AppWindow
 #'''''
 def main():
     sistema = SistemaGestaoTarefas(ficheiro_utilizadores="profiles.txt")
-
     app = QApplication(sys.argv)
     window = AppWindow(sistema)
     window.show()

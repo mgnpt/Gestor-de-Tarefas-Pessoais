@@ -1,8 +1,10 @@
+import datetime
+
 class Tarefa:
     def __init__(self, titulo, descricao, data, categoria, status="Pendente"):
         self.titulo = titulo
         self.descricao = descricao
-        self.data = data
+        self.data = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.categoria = categoria
         self.status = status
     
@@ -17,4 +19,3 @@ class Tarefa:
             f"Categoria: {self.categoria}\n"
             f"Status: {self.status}\n"
         )
-    

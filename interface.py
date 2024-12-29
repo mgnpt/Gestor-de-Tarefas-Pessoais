@@ -107,6 +107,11 @@ class AppWindow(QMainWindow):
         btn_ver_tarefas.clicked.connect(self.mostrar_lista_tarefas)
         layout.addWidget(btn_ver_tarefas)
 
+        #Botão para alterar senha
+        btn_alterar_senha = QPushButton("Alterar senha", self)
+        btn_alterar_senha.clicked.connect(self.abrir_tela_alterar_senha)
+        layout.addWidget(btn_alterar_senha)
+
         #Botão logout
         btn_logout = QPushButton("Logout", self)
         btn_logout.clicked.connect(self.voltar_para_login)
@@ -115,6 +120,44 @@ class AppWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         return container
+    
+    def abrir_tela_alterar_senha(self):
+        self.dialog_alterar_senha = QDialog(self)
+        self.dialog_alterar_senha.setWindowTitle("Alterar Palavra-Passe")
+        layout = QVBoxLayout()
+
+        #Campo para a nova senha
+        self.input_nv_senha = QLineEdit(self.dialog_alterar_senha)
+        self.input_nv_senha.setPlaceholderText("Digite a nova palavra-passe")
+        self.input_nv_senha.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.input_nv_senha)
+
+        #Botão para salvar 
+        btn_salvar_senha = QPushButton("Salvar", self.dialog_alterar_senha)
+        btn_salvar_senha.clicked.connect(self.salvar_nv_senha)
+        layout.addWidget(btn_salvar_senha)
+
+        #Botão para cancelar
+        btn_cancelar = QPushButton("Cancelar", self.dialog_alterar_senha)
+        btn_cancelar.clicked.connect(self.dialog_alterar_senha.close)
+        layout.addWidget(btn_cancelar)
+
+        self.dialog_alterar_senha.setLayout(layout)
+        self.dialog_alterar_senha.exec_()
+    
+    def salvar_nv_senha(self):
+        nova_senha = self.input_nv_senha.text()
+        if not nova_senha:
+            QMessageBox.warning(self, "Erro", "A palavra-passe nao pode estar vazia.")
+            return
+        
+        utilizador = self.sistema.utilizadores.get(self.nome_atual)
+        if utilizador:
+            utilizador.alt_senha(nova_senha)
+            QMessageBox.information(self, "Sucesso", "Palavra-passe alterada com sucesso!")
+            self.dialog_alterar_senha.close()
+        else:
+            QMessageBox.critical(self, "Erro", "Erro ao alterar palavra-passe. Utilizador nao encontrado.")
 
     def mostrar_lista_tarefas(self):
         utilizador = self.sistema.utilizadores.get(self.nome_atual)
@@ -141,14 +184,19 @@ class AppWindow(QMainWindow):
         btn_criar_tarefa = QPushButton("Criar Tarefa", self)
         btn_criar_tarefa.clicked.connect(self.criar_tarefa)
         layout.addWidget(btn_criar_tarefa)
-
+        #Trocar função
+        btn_remover_tarefa = QPushButton("Remover Tarefa", self)
+        btn_remover_tarefa.clicked.connect(self.voltar_para_dashboard)
+        layout.addWidget(btn_remover_tarefa)
+        #Trocar função
+        btn_marcar_concluido = QPushButton("Marcar como concluido", self)
+        btn_marcar_concluido.clicked.connect(self.voltar_para_dashboard)
+        layout.addWidget(btn_marcar_concluido)
+        
         btn_voltar = QPushButton("Voltar", self)
         btn_voltar.clicked.connect(self.voltar_para_dashboard)
         layout.addWidget(btn_voltar)
 
-        btn_voltar = QPushButton("Voltar", self)
-        btn_voltar.clicked.connect(self.voltar_para_dashboard)
-        layout.addWidget(btn_voltar)
 
         container = QWidget()
         container.setLayout(layout)
@@ -199,22 +247,30 @@ class AppWindow(QMainWindow):
     def salvar_tarefa(self):
         titulo = self.input_titulo.text()
         descricao = self.input_descricao.text()
-        data = self.input_data.text()
+        status = self.combo_status.currentText()
         categoria = self.combo_categoria.currentText()
 
-        if not titulo or not descricao or not data or not categoria:
-            QMessageBox.warning(self, "Erro", "Por favor, preencha todos os campos")
-            return
-        
         utilizador = self.sistema.utilizadores.get(self.nome_atual)
 
-        if utilizador:
-           utilizador.lista_tarefas.adicionar_tarefa(titulo, descricao, data, categoria)
-           QMessageBox.information(self, "Sucesso", "Tarefa criada com sucesso!")
-           self.nv_tarefa_janela.close()
+        tarefa = Tarefa(titulo, descricao, categoria, status, self.nome_atual)
+        if not titulo or not descricao or not categoria:
+            QMessageBox.warning(self, "Erro", "Por favor, preencha todos os campos")
+            return
 
+        if utilizador:
+            # Adiciona a tarefa à lista de tarefas do utilizador
+            utilizador.lista_tarefas.adicionarTarefa(tarefa)
+
+            # Gera o relatório automaticamente
+            from relatorio import Relatorio
+            relatorio = Relatorio()
+            relatorio.gerarRelatorio(utilizador.lista_tarefas.tarefas, utilizador_nome=self.nome_atual)
+
+            QMessageBox.information(self, "Sucesso", "Tarefa criada com sucesso!")
+            self.nv_tarefa_janela.close()
         else:
-            QMessageBox.critical(self, "Erro", "Não foi possível criar a tarefa. Utilizador nao encontrado.")
+            QMessageBox.critical(self, "Erro", "Não foi possível criar a tarefa. Utilizador não encontrado.")
+
 
     def voltar_para_dashboard(self):
         self.pages.setCurrentWidget(self.tela_dashboard)
@@ -255,16 +311,8 @@ class AppWindow(QMainWindow):
         utilizador = self.sistema.utilizadores.get(self.nome_atual)
         if utilizador:
             from relatorio import Relatorio
-            relatorio = Relatorio(utilizador.lista_tarefas)
-            resultado = relatorio.criar_relatorio()
+            relatorio = Relatorio()
+            resultado = relatorio.gerarRelatorio(utilizador.lista_tarefas.tarefas)
             QMessageBox.information(self, "Relatório", resultado)
         else:
             QMessageBox.critical(self, "Erro", "Erro ao criar o relatório. Utilizador nao encontrado.")
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    sistema = SistemaGestaoTarefas(ficheiro_utilizadores="profiles.txt")
-    window = AppWindow(sistema)
-    window.show()
-    sys.exit(app.exec_())
-

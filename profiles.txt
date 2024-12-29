@@ -1,2 +1,2 @@
-Teste1:1234
-Teste2:4321
+aa:$2b$12$99WWImhkh8lCnrXe5vJh3OoS84NT3Os35zaGXIuJVg0.rEGNr79F.
+antonio:$2b$12$fz3DNEXf87DVS34nu0vdzOH/QMT7L/iRXtGOVgQfkZ5fvszhfh/qu
