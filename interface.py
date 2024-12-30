@@ -289,6 +289,7 @@ class AppWindow(QMainWindow):
             self.pages.setCurrentWidget(self.tela_dashboard)
         else:
             print("Credenciais inválidas. Tente novamente.")
+            QMessageBox.warning(self, "Erro", "Credenciais inválidas. Tente novamente.")
             
 
     def registrar_utilizador(self):
