@@ -57,3 +57,4 @@ class SistemaGestaoTarefas:
     
     def encriptarSenha(self,senha):
         return bcrypt.hashpw(senha.encode(), bcrypt.gensalt())
+    

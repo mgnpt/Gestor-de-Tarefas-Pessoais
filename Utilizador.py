@@ -43,3 +43,4 @@ def load_profiles():
     except FileNotFoundError:
         print("Arquivo de perfis não encontrado. Nenhum perfil foi carregado.")
     return profiles
+        

@@ -1,8 +1,9 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QComboBox, QDialog, QMessageBox
+import os
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QComboBox, QDialog, QMessageBox, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QFont
 from sistema_gestao_tarefas import SistemaGestaoTarefas
-from tarefa import Tarefa
+from tarefa import Tarefa, ld_tarefas
+from lista_de_tarefas import ListaDeTarefas
 
 
 class AppWindow(QMainWindow):
@@ -145,6 +146,34 @@ class AppWindow(QMainWindow):
         self.dialog_alterar_senha.setLayout(layout)
         self.dialog_alterar_senha.exec_()
     
+    def removerTarefa(self, titulo):
+        self.tarefas = [tarefa for tarefa in self.tarefas if tarefa.titulo != titulo]
+        with open(self.filename,"w") as file:
+            for tarefa in self.tarefas:
+                file.write(f"Utilizador: {self.username},Titulo: {tarefa.titulo} Descricao: {tarefa.descricao}, Categoria: {tarefa.categoria}, Status: {tarefa.status},Data de criação: {tarefa.data}\n")
+    
+    def remover_tarefa(self):
+    # Verifica se alguma tarefa está selecionada
+        item_selecionado = self.lista_tarefas_widget.currentItem()
+        if item_selecionado:
+            titulo_tarefa = item_selecionado.text().split(":")[0]  # Extrai o título antes do ":"
+
+            #obter o utilizador atual
+            utilizador = self.sistema.utilizadores.get(self.nome_atual)
+            if utilizador:
+                #Chama o método removerTarefa do utilizador
+                utilizador.lista_tarefas.removerTarefa(titulo_tarefa)
+
+                #Mostra uma mensagem de sucesso
+                QMessageBox.information(self, "Sucesso", f"A tarefa '{titulo_tarefa}' foi removida.")
+
+                #Atualiza a lista de tarefas na interface
+                self.mostrar_lista_tarefas()
+            else:
+                QMessageBox.critical(self, "Erro", "Utilizador não encontrado.")
+        else:
+            QMessageBox.warning(self, "Erro", "Nenhuma tarefa foi selecionada.")
+
     def salvar_nv_senha(self):
         nova_senha = self.input_nv_senha.text()
         if not nova_senha:
@@ -159,13 +188,14 @@ class AppWindow(QMainWindow):
         else:
             QMessageBox.critical(self, "Erro", "Erro ao alterar palavra-passe. Utilizador nao encontrado.")
 
+    
     def mostrar_lista_tarefas(self):
         utilizador = self.sistema.utilizadores.get(self.nome_atual)
         if utilizador:
             self.ver_lista_tarefas(utilizador.lista_tarefas)
         else:
            print("Erro: utilizador não encontrado.") 
-
+      
     def ver_lista_tarefas(self, lista_de_tarefas):
         layout = QVBoxLayout()
 
@@ -173,26 +203,42 @@ class AppWindow(QMainWindow):
         label_titulo.setFont(QFont("Arial", 18))
         layout.addWidget(label_titulo)
 
+        self.lista_tarefas_widget = QListWidget(self)
+        layout.addWidget(self.lista_tarefas_widget)
+
+        #Tarefas antigas
+        tarefas_antigas = ld_tarefas()
+        tds_tarefas = tarefas_antigas + lista_de_tarefas.tarefas
+
+
+        for tarefa in tds_tarefas:
+            print(f"Título: {tarefa.titulo}, Descrição: {tarefa.descricao}, Categoria: {tarefa.categoria}, Status: {tarefa.status}")
+            self.lista_tarefas_widget.addItem(f"Título: {tarefa.titulo}, Descrição: {tarefa.descricao}, Categoria: {tarefa.categoria}, Status: {tarefa.status}")
+
+        self.setLayout(layout)
+            
+            
         if lista_de_tarefas.tarefas:
             for tarefa in lista_de_tarefas.tarefas:
-                label_tarefa = QLabel(f"- {tarefa.titulo}: {tarefa.descricao}", self)
-                layout.addWidget(label_tarefa)
-        else:
-            label_vazio = QLabel("A lista está vazia", self)
-            layout.addWidget(label_vazio)
-        
+                # Adicionar cada tarefa como item na QListWidget
+                self.lista_tarefas_widget.addItem(f"{tarefa.titulo}: {tarefa.descricao} : {tarefa.categoria} : {tarefa.status}")
+
+        #Botão criar tarefa
         btn_criar_tarefa = QPushButton("Criar Tarefa", self)
         btn_criar_tarefa.clicked.connect(self.criar_tarefa)
         layout.addWidget(btn_criar_tarefa)
-        #Trocar função
+        
+        #Botão remover tarefa
         btn_remover_tarefa = QPushButton("Remover Tarefa", self)
-        btn_remover_tarefa.clicked.connect(self.voltar_para_dashboard)
+        btn_remover_tarefa.clicked.connect(self.remover_tarefa)
         layout.addWidget(btn_remover_tarefa)
-        #Trocar função
+        
+        #Botão marcar tarefa como comcluido
         btn_marcar_concluido = QPushButton("Marcar como concluido", self)
-        btn_marcar_concluido.clicked.connect(self.voltar_para_dashboard)
+        btn_marcar_concluido.clicked.connect(self.marcar_como_concluido)
         layout.addWidget(btn_marcar_concluido)
         
+        #Botão voltar para a dashboard
         btn_voltar = QPushButton("Voltar", self)
         btn_voltar.clicked.connect(self.voltar_para_dashboard)
         layout.addWidget(btn_voltar)
@@ -219,14 +265,9 @@ class AppWindow(QMainWindow):
         self.input_descricao.setPlaceholderText("Descricao")
         layout.addWidget(self.input_descricao)
 
-        #Data
-        self.input_data = QLineEdit()
-        self.input_data.setPlaceholderText("Data (ex: 2024-12-28)")
-        layout.addWidget(self.input_data)
-
         #Categoria
         self.combo_categoria = QComboBox()
-        self.combo_categoria.addItems(["Trabalho", "Pessoal", "Estudos"])
+        self.combo_categoria.addItems(["Trabalho", "Pessoal", "Estudos", "Casa", "Outros"])
         layout.addWidget(self.combo_categoria)
 
         self.combo_status = QComboBox()
@@ -244,21 +285,52 @@ class AppWindow(QMainWindow):
         self.nv_tarefa_janela.setLayout(layout)
         self.nv_tarefa_janela.exec_()
 
+    def remover_tarefa(self):
+    # Verifica se alguma tarefa está selecionada
+        item_selecionado = self.lista_tarefas_widget.currentItem()
+        if item_selecionado:
+            titulo_tarefa = item_selecionado.text().split(":")[0]  # Extrai o título antes do ":"
+            
+            # Obter o utilizador atual
+            utilizador = self.sistema.utilizadores.get(self.nome_atual)
+            if utilizador:
+                # Chama o método removerTarefa do utilizador
+                utilizador.lista_tarefas.removerTarefa(titulo_tarefa)
+                
+                # Mostra uma mensagem de sucesso
+                QMessageBox.information(self, "Sucesso", f"A tarefa '{titulo_tarefa}' foi removida.")
+                
+                # Atualiza a lista de tarefas na interface
+                self.mostrar_lista_tarefas()
+            else:
+                QMessageBox.critical(self, "Erro", "Utilizador não encontrado.")
+        else:
+            QMessageBox.warning(self, "Erro", "Nenhuma tarefa foi selecionada.")
+
+
     def salvar_tarefa(self):
         titulo = self.input_titulo.text()
         descricao = self.input_descricao.text()
-        status = self.combo_status.currentText()
         categoria = self.combo_categoria.currentText()
+        status = self.combo_status.currentText()
+
+        print(f"Categoria selecionada: {categoria}")
+        print(f"Status selecionado: {status}")
 
         utilizador = self.sistema.utilizadores.get(self.nome_atual)
 
-        tarefa = Tarefa(titulo, descricao, categoria, status, self.nome_atual)
         if not titulo or not descricao or not categoria:
             QMessageBox.warning(self, "Erro", "Por favor, preencha todos os campos")
             return
 
         if utilizador:
-            # Adiciona a tarefa à lista de tarefas do utilizador
+            #Verificar se já existe uma tarefa com o mesmo nome
+            for tarefa in utilizador.lista_tarefas.tarefas:
+                if tarefa.titulo == titulo:
+                    QMessageBox.warning(self, "Erro", "Tarefa com o mesmo título já existe.")
+                    return
+
+            tarefa = Tarefa(titulo, descricao, categoria, status, self.nome_atual)
             utilizador.lista_tarefas.adicionarTarefa(tarefa)
 
             # Gera o relatório automaticamente
@@ -267,9 +339,24 @@ class AppWindow(QMainWindow):
             relatorio.gerarRelatorio(utilizador.lista_tarefas.tarefas, utilizador_nome=self.nome_atual)
 
             QMessageBox.information(self, "Sucesso", "Tarefa criada com sucesso!")
+            self.mostrar_lista_tarefas()
             self.nv_tarefa_janela.close()
         else:
             QMessageBox.critical(self, "Erro", "Não foi possível criar a tarefa. Utilizador não encontrado.")
+
+    def marcar_como_concluido(self):
+        item_selecionado = self.lista_tarefas_widget.currentItem()
+        if item_selecionado:
+            titulo_tarefa = item_selecionado.text().split(":")[0]  # Extrai o título antes do ":"
+                
+            # Obter o utilizador atual
+            utilizador = self.sistema.utilizadores.get(self.nome_atual)
+            if utilizador:
+                for tarefa in utilizador.lista_tarefas.tarefas:
+                    if tarefa.titulo == titulo_tarefa:
+                        tarefa.concluir()  # Chama o método concluir da tarefa
+                        break
+            self.mostrar_lista_tarefas()
 
 
     def voltar_para_dashboard(self):

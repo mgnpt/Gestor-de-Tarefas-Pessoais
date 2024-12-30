@@ -18,4 +18,3 @@ class Relatorio:
         # Escreve o relatório no ficheiro
         with open(self.filename, "a") as file:
             file.writelines(tarefas_relatorio)
-
