@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QApplication
 from sistema_gestao_tarefas import SistemaGestaoTarefas
 from interface import AppWindow
 
-#'''''
 def main():
     sistema = SistemaGestaoTarefas(ficheiro_utilizadores="profiles.txt")
     app = QApplication(sys.argv)
