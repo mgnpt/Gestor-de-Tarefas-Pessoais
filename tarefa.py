@@ -1,7 +1,8 @@
-import datetime, os
+import datetime
+import os
 
 class Tarefa:
-    def __init__(self, titulo, descricao, data, categoria, status):
+    def __init__(self, titulo, descricao, data, categoria, status="Pendente"):
         self.titulo = titulo
         self.descricao = descricao
         self.data = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -11,6 +12,7 @@ class Tarefa:
     def concluir(self):
         self.status = "Concluída"
                 
+#Leitura do ficheiro tarefa.txt
 def ld_tarefas():
     tasks = []
     if os.path.exists("tarefa.txt"):
